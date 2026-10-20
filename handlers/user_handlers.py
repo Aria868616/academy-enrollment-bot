@@ -22,6 +22,13 @@ logger = logging.getLogger(__name__)
 
 PHONE_PATTERN = re.compile(r"^09\d{9}$")
 GENERIC_ERROR_TEXT = "❌ خطایی رخ داد. لطفاً دوباره تلاش کنید."
+def _is_plain_text(message: types.Message) -> bool:
+    """True for ordinary text, False for commands such as /my_courses.
+
+    Used on the FSM step handlers so that a command typed in the middle of
+    the flow is not stored as the user's name or phone number.
+    """
+    return bool(message.text) and not message.text.startswith("/")
 
 
 class enrolling(StatesGroup):
@@ -67,7 +74,7 @@ def process_course_selection(call: types.CallbackQuery, state: StateContext):
     )
 
 
-@bot.message_handler(state=enrolling.full_name)
+@bot.message_handler(state=enrolling.full_name,func=_is_plain_text)
 def process_full_name(message, state: StateContext):
     with state.data() as data:
         data["full_name"] = message.text
@@ -76,7 +83,7 @@ def process_full_name(message, state: StateContext):
     bot.send_message(message.chat.id, "لطفاً شماره تماس خود را وارد کنید 📱:")
 
 
-@bot.message_handler(state=enrolling.phone_number)
+@bot.message_handler(state=enrolling.phone_number, func=_is_plain_text)
 def process_phone_number(message, state: StateContext):
     phone = message.text
 
