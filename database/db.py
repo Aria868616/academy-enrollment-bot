@@ -1,15 +1,18 @@
-from sqlmodel import SQLModel, create_engine, Session
+"""Database engine and table creation."""
+from sqlmodel import Session, SQLModel, create_engine
+
 from config import DB_NAME
-from database.models import User, Course, Enrollment  # ایمپورت مدل‌ها برای شناخته شدن توسط اسکیما
+from database import models  # noqa: F401  (registers the tables on SQLModel.metadata)
 
-# ایجاد موتور اتصال به دیتابیس SQLite
-engine = create_engine(DB_NAME, echo=True)
+engine = create_engine(DB_NAME, echo=False)
 
-def create_db_and_tables():
-    """این تابع اسکیماهای تعریف‌شده را می‌خواند و جداول را در دیتابیس می‌سازد"""
+
+def create_db_and_tables() -> None:
+    """Create all tables that do not exist yet."""
     SQLModel.metadata.create_all(engine)
 
+
 def get_session():
-    """تولیدکننده سشن (Session) برای ارتباط با دیتابیس در طول اجرای کوئری‌ها"""
+    """Yield a database session and close it afterwards."""
     with Session(engine) as session:
         yield session
