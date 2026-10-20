@@ -120,12 +120,13 @@ def process_course_selection(call: types.CallbackQuery, state: StateContext):
     # 🔍 استخراج شناسه دوره از callback_data
     course_id = int(call.data.split("_")[1])
 
+    # 🚀 تغییر وضعیت به دریافت نام
+    state.set(enrolling.full_name)
     # 📂 ذخیره course_id در حافظه موقت FSM
     with state.data() as data:
         data["course_id"] = course_id
 
-    # 🚀 تغییر وضعیت به دریافت نام
-    state.set(enrolling.full_name)
+    
 
     bot.answer_callback_query(call.id, "دوره با موفقیت انتخاب شد.")
     bot.send_message(
