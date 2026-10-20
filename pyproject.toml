@@ -1,7 +1,7 @@
 [project]
 name = "pc-bot"
 version = "0.1.0"
-description = "Add your description here"
+description = "Telegram bot for course enrollment, built with pyTelegramBotAPI and SQLModel"
 readme = "README.md"
 authors = [
     { name = "Aria", email = "noreply@example.com" }
@@ -9,14 +9,11 @@ authors = [
 requires-python = ">=3.14"
 dependencies = [
     "pytelegrambotapi>=4.37.0",
-    "pytest>=9.1.1",
     "python-dotenv>=1.2.4",
     "sqlmodel>=0.0.48",
 ]
 
-[project.scripts]
-pc-bot = "pc_bot:main"
-
-[build-system]
-requires = ["uv_build>=0.12.15,<0.13.0"]
-build-backend = "uv_build"
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

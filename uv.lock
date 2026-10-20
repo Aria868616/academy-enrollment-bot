@@ -419,21 +419,27 @@ wheels = [
 [[package]]
 name = "pc-bot"
 version = "0.1.0"
-source = { editable = "." }
+source = { virtual = "." }
 dependencies = [
     { name = "pytelegrambotapi" },
-    { name = "pytest" },
     { name = "python-dotenv" },
     { name = "sqlmodel" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "pytelegrambotapi", specifier = ">=4.37.0" },
-    { name = "pytest", specifier = ">=9.1.1" },
     { name = "python-dotenv", specifier = ">=1.2.4" },
     { name = "sqlmodel", specifier = ">=0.0.48" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=9.1.1" }]
 
 [[package]]
 name = "pluggy"
