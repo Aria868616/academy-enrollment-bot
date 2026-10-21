@@ -14,6 +14,7 @@ from telebot.states import State, StatesGroup
 from telebot.states.sync.context import StateContext
 
 from database.db import engine
+from database.enrollment import EnrollmentResult, enroll_user
 from database.keyboards.inline import get_courses_keyboard
 from database.models import Course, Enrollment, User
 from loader import bot
@@ -22,6 +23,20 @@ logger = logging.getLogger(__name__)
 
 PHONE_PATTERN = re.compile(r"^09\d{9}$")
 GENERIC_ERROR_TEXT = "❌ خطایی رخ داد. لطفاً دوباره تلاش کنید."
+
+RESULT_MESSAGES = {
+    EnrollmentResult.ENROLLED: "🎉 ثبت‌نام شما در دوره مورد نظر با موفقیت انجام شد!",
+    EnrollmentResult.ALREADY_ENROLLED: "⚠️ شما پیش از این در این دوره ثبت‌نام کرده‌اید!",
+    EnrollmentResult.COURSE_FULL: (
+        "😕 ظرفیت این دوره تکمیل شده است.\n"
+        "برای انتخاب دوره‌ی دیگر از /start استفاده کنید."
+    ),
+    EnrollmentResult.COURSE_NOT_FOUND: (
+        "⚠️ این دوره دیگر وجود ندارد. لطفاً با /start دوباره شروع کنید."
+    ),
+}
+
+
 def _is_plain_text(message: types.Message) -> bool:
     """True for ordinary text, False for commands such as /my_courses.
 
@@ -38,7 +53,7 @@ class enrolling(StatesGroup):
     phone_number = State()
 
 
-@bot.message_handler( commands=["cancel"])
+@bot.message_handler(commands=["cancel"])
 def cancel(message, state: StateContext):
     state.delete()
     bot.send_message(message.chat.id, "فرآیند لغو شد.")
@@ -74,7 +89,7 @@ def process_course_selection(call: types.CallbackQuery, state: StateContext):
     )
 
 
-@bot.message_handler(state=enrolling.full_name,func=_is_plain_text)
+@bot.message_handler(state=enrolling.full_name, func=_is_plain_text)
 def process_full_name(message, state: StateContext):
     with state.data() as data:
         data["full_name"] = message.text
@@ -107,62 +122,22 @@ def process_phone_number(message, state: StateContext):
         return
 
     try:
-        already_enrolled = _enroll_user(
-            telegram_id=message.from_user.id,
-            full_name=full_name,
-            phone=phone,
-            course_id=course_id,
-        )
+        with Session(engine) as session:
+            result = enroll_user(
+                session,
+                telegram_id=message.from_user.id,
+                full_name=full_name,
+                phone=phone,
+                course_id=course_id,
+            )
     except Exception:
         # The state is kept so the user can simply resend the phone number.
         logger.exception("Enrollment failed for telegram_id=%s", message.from_user.id)
         bot.send_message(message.chat.id, GENERIC_ERROR_TEXT)
         return
 
-    if already_enrolled:
-        bot.send_message(
-            message.chat.id,
-            "⚠️ شما پیش از این در این دوره ثبت‌نام کرده‌اید!",
-        )
-    else:
-        bot.send_message(
-            message.chat.id,
-            "🎉 ثبت‌نام شما در دوره مورد نظر با موفقیت انجام شد!",
-        )
-
+    bot.send_message(message.chat.id, RESULT_MESSAGES[result])
     state.delete()
-
-
-def _enroll_user(telegram_id: int, full_name: str, phone: str, course_id: int) -> bool:
-    """Create the user if needed and enroll them in the course.
-
-    Returns True if the user was already enrolled, False if a new
-    enrollment was created.
-    """
-    with Session(engine) as session:
-        db_user = session.exec(
-            select(User).where(User.telegram_id == telegram_id)
-        ).first()
-
-        if not db_user:
-            db_user = User(telegram_id=telegram_id, full_name=full_name, phone=phone)
-            session.add(db_user)
-            session.commit()
-            session.refresh(db_user)
-
-        existing = session.exec(
-            select(Enrollment).where(
-                Enrollment.user_id == db_user.id,
-                Enrollment.course_id == course_id,
-            )
-        ).first()
-
-        if existing:
-            return True
-
-        session.add(Enrollment(user_id=db_user.id, course_id=course_id))
-        session.commit()
-        return False
 
 
 @bot.message_handler(commands=["my_courses"])
