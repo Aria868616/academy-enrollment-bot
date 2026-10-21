@@ -4,7 +4,6 @@ A Telegram bot that lets users browse courses and enroll through a guided, multi
 
 Built with **Python**, **pyTelegramBotAPI**, and **SQLModel**.
 
- TODO: add a screenshot or GIF, then uncomment (see "Screenshots" below).
 <p align="center">
   <img src="docs/screenshots/enrollment-flow.png" alt="Enrollment flow" width="360">
 </p>
@@ -25,7 +24,6 @@ Built with **Python**, **pyTelegramBotAPI**, and **SQLModel**.
 - [Design Notes](#design-notes)
 - [Known Limitations](#known-limitations)
 - [Roadmap](#roadmap)
-- [Screenshots](#screenshots)
 - [Author](#author)
 - [License](#license)
 
@@ -111,6 +109,8 @@ Conversation data (selected course, full name) lives in the FSM storage while th
 ├── test_enrollment.py         # Enrollment and capacity tests
 ├── test_admin_queries.py      # Admin statistics tests
 ├── .env.example
+├── docs/screenshots/          # README images
+├── LICENSE
 ├── pyproject.toml
 └── uv.lock
 ```
@@ -206,6 +206,7 @@ uv run bot.py
 ```
 
 On startup the bot creates any missing database tables, removes any leftover webhook, and begins long polling.
+The script creates the tables if needed and skips courses whose title already exists, so it is safe to run more than once. Edit the `SAMPLE_COURSES` list at the top of the file to use your own courses.
 
 ---
 
@@ -274,19 +275,6 @@ The Telegram-facing parts (handler registration order, the admin filter, inline 
 
 ---
 
-## Screenshots
-
-Add screenshots to `docs/screenshots/` and reference them at the top of this file. Suggested set:
-
-1. Welcome message with the course list
-2. Name and phone prompts
-3. Successful enrollment, and the "course is full" reply
-4. `/my_courses` output
-5. Admin panel with the statistics view
-
-Make sure screenshots do not reveal real phone numbers, chat lists or your bot token.
-
----
 
 ## Author
 
