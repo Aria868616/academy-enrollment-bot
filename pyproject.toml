@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Telegram bot for course enrollment, built with pyTelegramBotAPI and SQLModel"
 readme = "README.md"
 authors = [
-    { name = "Aria", email = "noreply@example.com" }
+    { name = "Aria" }
 ]
 requires-python = ">=3.14"
 dependencies = [
