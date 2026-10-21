@@ -4,11 +4,11 @@ A Telegram bot that lets users browse courses and enroll through a guided, multi
 
 Built with **Python**, **pyTelegramBotAPI**, and **SQLModel**.
 
-<!-- TODO: add a screenshot or GIF, then uncomment (see "Screenshots" below).
+ TODO: add a screenshot or GIF, then uncomment (see "Screenshots" below).
 <p align="center">
   <img src="docs/screenshots/enrollment-flow.png" alt="Enrollment flow" width="360">
 </p>
--->
+
 
 ---
 
