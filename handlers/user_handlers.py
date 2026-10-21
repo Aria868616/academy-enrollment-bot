@@ -6,7 +6,7 @@ database only after the last step succeeds.
 """
 import html
 import logging
-import re
+
 
 from sqlmodel import Session, select
 from telebot import types
@@ -18,10 +18,10 @@ from database.enrollment import EnrollmentResult, enroll_user
 from database.keyboards.inline import get_courses_keyboard
 from database.models import Course, Enrollment, User
 from loader import bot
-
+from phone import PHONE_PATTERN, is_valid_phone, normalize_phone  # noqa: F401
 logger = logging.getLogger(__name__)
 
-PHONE_PATTERN = re.compile(r"^09\d{9}$")
+
 GENERIC_ERROR_TEXT = "❌ خطایی رخ داد. لطفاً دوباره تلاش کنید."
 
 RESULT_MESSAGES = {
@@ -99,10 +99,11 @@ def process_full_name(message, state: StateContext):
 
 
 @bot.message_handler(state=enrolling.phone_number, func=_is_plain_text)
+@bot.message_handler(state=enrolling.phone_number, func=_is_plain_text)
 def process_phone_number(message, state: StateContext):
-    phone = message.text
+    phone = normalize_phone(message.text)
 
-    if not PHONE_PATTERN.match(phone or ""):
+    if not is_valid_phone(phone):
         bot.send_message(
             message.chat.id,
             "❌ شماره تماس نامعتبر است. لطفاً شماره را به شکل صحیح وارد کنید (مثلاً 09123456789):",
